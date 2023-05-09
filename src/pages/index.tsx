@@ -7,11 +7,19 @@ import styles from '~/styles/Home.module.css';
 const inter = Inter({ subsets: ['latin'] });
 
 export default function Home() {
-  const [products, setProducts] = useState<
-    Array<{ id: string; properties: Array<{ id: string }> }>
-  >([]);
+  // const [products, setProducts] = useState<
+  //   Array<{ id: string; properties: Array<{ id: string }> }>
+  // >([]);
+  // useEffect(() => {
+  //   fetch('/api/get-items')
+  //     .then(res => res.json())
+  //     .then(data => setProducts(data.items));
+  // }, []);
+  const [products, setProducts] = useState<Array<{ id: string; name: string }>>(
+    [],
+  );
   useEffect(() => {
-    fetch('/api/get-items')
+    fetch('/api/get-products')
       .then(res => res.json())
       .then(data => setProducts(data.items));
   }, []);
@@ -42,7 +50,7 @@ export default function Home() {
           <button onClick={handleClick}>Add Jacket</button>
           <div>
             <p>Product List</p>
-            {products &&
+            {/* {products &&
               products.map(item => (
                 <div key={item.id}>
                   {JSON.stringify(item)}
@@ -64,7 +72,9 @@ export default function Home() {
                   <br />
                   <br />
                 </div>
-              ))}
+              ))} */}
+            {products &&
+              products.map(item => <div key={item.id}>{item.name}</div>)}
           </div>
         </div>
       </main>
