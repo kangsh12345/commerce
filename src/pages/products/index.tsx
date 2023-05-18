@@ -38,6 +38,8 @@ export default function Products() {
                 width={300}
                 height={200}
                 style={{ width: '100%' }}
+                placeholder="blur"
+                blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mO8WA8AAicBUm5VYI8AAAAASUVORK5CYII="
               />
               <div className="flex">
                 <span>{item.name}</span>
