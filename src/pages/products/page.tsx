@@ -3,7 +3,7 @@ import Image from 'next/image';
 import { Pagination } from '@mantine/core';
 import { products } from '@prisma/client';
 
-const TAKE = 9;
+import { CATEGORY_MAP, TAKE } from '~/constants/products';
 
 export default function Products() {
   const [products, setProducts] = useState<products[]>([]);
@@ -51,7 +51,7 @@ export default function Products() {
                   </span>
                 </div>
                 <span className="text-zinc-400">
-                  {item.category_id === 1
+                  {/* {item.category_id === 1
                     ? '신발'
                     : item.category_id === 2
                     ? '티셔츠'
@@ -59,7 +59,8 @@ export default function Products() {
                     ? '바지'
                     : item.category_id === 4
                     ? '모자'
-                    : '후드티'}
+                    : '후드티'} */}
+                  {CATEGORY_MAP[item.category_id]}
                 </span>
               </div>
             </div>

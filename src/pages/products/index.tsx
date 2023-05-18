@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import Image from 'next/image';
 import { products } from '@prisma/client';
 
-const TAKE = 9;
+import { TAKE } from '~/constants/products';
 
 export default function Products() {
   const [skip, setSkip] = useState(0);
