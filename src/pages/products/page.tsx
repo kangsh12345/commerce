@@ -56,18 +56,24 @@ export default function Products() {
         </div>
       )}
       {products && (
-        // <div className="flex flex-wrap justify-center">
-        <div className="grid grid-cols-3 gap-5">
+        <div className="grid grid-cols-12 gap-10">
           {products.map(item => (
-            <div key={item.id}>
-              <div style={{ width: 310 }}>
-                <div style={{ position: 'relative', width: 310, height: 390 }}>
+            <div
+              key={item.id}
+              className="md:col-span-6 lg:col-span-4 col-span-12"
+            >
+              <div className="rounded shadow-lg flex flex-col break-word">
+                <div className="relative pb-[100%] overflow-hidden">
                   <Image
-                    className="rounded"
+                    className="rounded hover:scale-110 duration-300"
                     src={item.image_url ?? ''}
                     alt={item.name}
                     fill
-                    style={{ objectFit: 'cover', overflow: 'hidden' }}
+                    style={{
+                      objectFit: 'cover',
+                      overflow: 'hidden',
+                      backgroundPosition: '50% 50%',
+                    }}
                     placeholder="blur"
                     blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mO8WA8AAicBUm5VYI8AAAAASUVORK5CYII="
                   />
