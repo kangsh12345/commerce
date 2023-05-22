@@ -1,16 +1,37 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { PrismaClient } from '@prisma/client';
 
+import { getOrderBy } from '../../constants/products';
+
 const prisma = new PrismaClient();
 
-async function getProducts(skip: number, take: number, category: number) {
+async function getProducts({
+  skip,
+  take,
+  category,
+  orderBy,
+  contains,
+}: {
+  skip: number;
+  take: number;
+  category: number;
+  orderBy: string;
+  contains: string;
+}) {
+  const containsCondition =
+    contains && contains !== ''
+      ? {
+          name: { contains: contains },
+        }
+      : undefined;
   const where =
     category && category !== -1
       ? {
-          where: {
-            category_id: category,
-          },
+          category_id: category,
+          ...containsCondition,
         }
+      : containsCondition
+      ? containsCondition
       : undefined;
 
   try {
@@ -18,10 +39,8 @@ async function getProducts(skip: number, take: number, category: number) {
       // 몇개를 스킵하고 몇개를 가져올지
       skip: skip,
       take: take,
-      ...where,
-      orderBy: {
-        price: 'asc',
-      },
+      ...getOrderBy(orderBy),
+      where: where,
     });
     console.log(response);
     return response;
@@ -39,17 +58,19 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>,
 ) {
-  const { skip, take, category } = req.query;
+  const { skip, take, category, orderBy, contains } = req.query;
   if (skip === null || take === null) {
     res.status(400).json({ message: 'no skip or take' });
   }
 
   try {
-    const products = await getProducts(
-      Number(skip),
-      Number(take),
-      Number(category),
-    );
+    const products = await getProducts({
+      skip: Number(skip),
+      take: Number(take),
+      category: Number(category),
+      orderBy: String(orderBy),
+      contains: String(contains),
+    });
     res.status(200).json({ items: products, message: `Success` });
   } catch (error) {
     res.status(400).json({ message: `Failed` });

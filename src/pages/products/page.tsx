@@ -1,9 +1,11 @@
-import { useEffect, useState } from 'react';
+import { ChangeEvent, useEffect, useState } from 'react';
 import Image from 'next/image';
-import { Pagination, SegmentedControl } from '@mantine/core';
+import { Input, Pagination, SegmentedControl, Select } from '@mantine/core';
 import { categories, products } from '@prisma/client';
+import { IconSearch } from '@tabler/icons-react';
 
-import { CATEGORY_MAP, TAKE } from '~/constants/products';
+import { CATEGORY_MAP, FILTERS, TAKE } from '~/constants/products';
+import useDebounce from '~/hooks/useDebounce';
 
 export default function Products() {
   const [products, setProducts] = useState<products[]>([]);
@@ -11,6 +13,12 @@ export default function Products() {
   const [categories, setCategories] = useState<categories[]>([]);
   const [activePage, setPage] = useState(1);
   const [selectedCategory, setSelectedCategory] = useState<string>('-1');
+  const [selectedFilter, setSelectedFilter] = useState<string | null>(
+    FILTERS[0].value,
+  );
+  const [keyword, setKeyword] = useState('');
+
+  const debouncedKeyword = useDebounce<string>(keyword);
 
   useEffect(() => {
     fetch(`/api/get-categories`)
@@ -19,28 +27,44 @@ export default function Products() {
   }, []);
 
   useEffect(() => {
-    fetch(`/api/get-products-count?category=${selectedCategory}`)
+    fetch(
+      `/api/get-products-count?category=${selectedCategory}&contains=${debouncedKeyword}`,
+    )
       .then(res => res.json())
       .then(data => {
         setPage(1);
         setTotal(Math.ceil(data.items / TAKE));
       });
-  }, [selectedCategory]);
+  }, [selectedCategory, debouncedKeyword]);
 
   useEffect(() => {
     const skip = TAKE * (activePage - 1);
 
     fetch(
-      `/api/get-products?skip=${skip}&take=${TAKE}&category=${selectedCategory}`,
+      `/api/get-products?skip=${skip}&take=${TAKE}&category=${selectedCategory}&orderBy=${selectedFilter}&contains=${debouncedKeyword}`,
     )
       .then(res => res.json())
       .then(data => setProducts(data.items));
-  }, [activePage, selectedCategory]);
+  }, [activePage, selectedCategory, selectedFilter, debouncedKeyword]);
+
+  const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
+    setKeyword(e.target.value);
+  };
 
   return (
     <div className="px-36 mt-36">
-      {categories && (
-        <div className="mb-4">
+      <div className="mb-4">
+        <Input
+          icon={<IconSearch />}
+          placeholder="검색어를 입력해주세요."
+          value={keyword}
+          onChange={handleSearch}
+          radius="md"
+          size="md"
+        />
+      </div>
+      <div className="flex justify-between mb-4 flex-wrap gap-2">
+        {categories && (
           <SegmentedControl
             value={selectedCategory}
             onChange={setSelectedCategory}
@@ -53,8 +77,13 @@ export default function Products() {
             ]}
             color="dark"
           />
-        </div>
-      )}
+        )}
+        <Select
+          value={selectedFilter}
+          onChange={setSelectedFilter}
+          data={FILTERS}
+        />
+      </div>
       {products && (
         <div className="grid grid-cols-12 gap-10">
           {products.map(item => (
