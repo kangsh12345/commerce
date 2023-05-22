@@ -3,12 +3,13 @@ import Image from 'next/image';
 import { Input, Pagination, SegmentedControl, Select } from '@mantine/core';
 import { categories, products } from '@prisma/client';
 import { IconSearch } from '@tabler/icons-react';
+import { useQuery } from '@tanstack/react-query';
 
 import { CATEGORY_MAP, FILTERS, TAKE } from '~/constants/products';
 import useDebounce from '~/hooks/useDebounce';
 
 export default function Products() {
-  const [products, setProducts] = useState<products[]>([]);
+  // const [products, setProducts] = useState<products[]>([]);
   const [total, setTotal] = useState(0);
   const [categories, setCategories] = useState<categories[]>([]);
   const [activePage, setPage] = useState(1);
@@ -37,15 +38,34 @@ export default function Products() {
       });
   }, [selectedCategory, debouncedKeyword]);
 
-  useEffect(() => {
-    const skip = TAKE * (activePage - 1);
+  // useEffect(() => {
+  //   const skip = TAKE * (activePage - 1);
 
-    fetch(
-      `/api/get-products?skip=${skip}&take=${TAKE}&category=${selectedCategory}&orderBy=${selectedFilter}&contains=${debouncedKeyword}`,
-    )
-      .then(res => res.json())
-      .then(data => setProducts(data.items));
-  }, [activePage, selectedCategory, selectedFilter, debouncedKeyword]);
+  //   fetch(
+  //     `/api/get-products?skip=${skip}&take=${TAKE}&category=${selectedCategory}&orderBy=${selectedFilter}&contains=${debouncedKeyword}`,
+  //   )
+  //     .then(res => res.json())
+  //     .then(data => setProducts(data.items));
+  // }, [activePage, selectedCategory, selectedFilter, debouncedKeyword]);
+
+  const { data: products } = useQuery<
+    { items: products[] },
+    unknown,
+    products[]
+  >({
+    queryKey: [
+      `/api/get-products?skip=${
+        TAKE * (activePage - 1)
+      }&take=${TAKE}&category=${selectedCategory}&orderBy=${selectedFilter}&contains=${debouncedKeyword}`,
+    ],
+    queryFn: () =>
+      fetch(
+        `/api/get-products?skip=${
+          TAKE * (activePage - 1)
+        }&take=${TAKE}&category=${selectedCategory}&orderBy=${selectedFilter}&contains=${debouncedKeyword}`,
+      ).then(res => res.json()),
+    select: data => data.items,
+  });
 
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
     setKeyword(e.target.value);
