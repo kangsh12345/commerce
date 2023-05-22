@@ -1,4 +1,4 @@
-import { ChangeEvent, useEffect, useState } from 'react';
+import { ChangeEvent, useState } from 'react';
 import Image from 'next/image';
 import { Input, Pagination, SegmentedControl, Select } from '@mantine/core';
 import { categories, products } from '@prisma/client';
@@ -10,8 +10,8 @@ import useDebounce from '~/hooks/useDebounce';
 
 export default function Products() {
   // const [products, setProducts] = useState<products[]>([]);
-  const [total, setTotal] = useState(0);
-  const [categories, setCategories] = useState<categories[]>([]);
+  // const [total, setTotal] = useState(0);
+  // const [categories, setCategories] = useState<categories[]>([]);
   const [activePage, setPage] = useState(1);
   const [selectedCategory, setSelectedCategory] = useState<string>('-1');
   const [selectedFilter, setSelectedFilter] = useState<string | null>(
@@ -21,22 +21,42 @@ export default function Products() {
 
   const debouncedKeyword = useDebounce<string>(keyword);
 
-  useEffect(() => {
-    fetch(`/api/get-categories`)
-      .then(res => res.json())
-      .then(data => setCategories(data.items));
-  }, []);
+  // useEffect(() => {
+  //   fetch(`/api/get-categories`)
+  //     .then(res => res.json())
+  //     .then(data => setCategories(data.items));
+  // }, []);
+  const { data: categories } = useQuery<
+    { items: categories[] },
+    unknown,
+    categories[]
+  >({
+    queryKey: [`/api/get-categories`],
+    queryFn: () => fetch(`/api/get-categories`).then(res => res.json()),
+    select: data => data.items,
+  });
 
-  useEffect(() => {
-    fetch(
+  // useEffect(() => {
+  //   fetch(
+  //     `/api/get-products-count?category=${selectedCategory}&contains=${debouncedKeyword}`,
+  //   )
+  //     .then(res => res.json())
+  //     .then(data => {
+  //       setPage(1);
+  //       setTotal(Math.ceil(data.items / TAKE));
+  //     });
+  // }, [selectedCategory, debouncedKeyword]);
+
+  const { data: total } = useQuery<{ items: number }, Error, number>({
+    queryKey: [
       `/api/get-products-count?category=${selectedCategory}&contains=${debouncedKeyword}`,
-    )
-      .then(res => res.json())
-      .then(data => {
-        setPage(1);
-        setTotal(Math.ceil(data.items / TAKE));
-      });
-  }, [selectedCategory, debouncedKeyword]);
+    ],
+    queryFn: () =>
+      fetch(
+        `/api/get-products-count?category=${selectedCategory}&contains=${debouncedKeyword}`,
+      ).then(res => res.json()),
+    select: data => Math.ceil(data.items / TAKE),
+  });
 
   // useEffect(() => {
   //   const skip = TAKE * (activePage - 1);
@@ -48,7 +68,7 @@ export default function Products() {
   //     .then(data => setProducts(data.items));
   // }, [activePage, selectedCategory, selectedFilter, debouncedKeyword]);
 
-  const { data: products } = useQuery<
+  const { data: products, isLoading: productsIsLoading } = useQuery<
     { items: products[] },
     unknown,
     products[]
@@ -104,7 +124,9 @@ export default function Products() {
           data={FILTERS}
         />
       </div>
-      {products && products.length !== 0 ? (
+      {productsIsLoading ? (
+        <>로딩중</>
+      ) : products && products.length !== 0 ? (
         <>
           <div className="grid grid-cols-12 gap-10">
             {products.map(item => (
@@ -149,7 +171,7 @@ export default function Products() {
               className="m-auto"
               value={activePage}
               onChange={setPage}
-              total={total}
+              total={total ?? 1}
             />
           </div>
         </>
