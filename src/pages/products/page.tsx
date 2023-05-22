@@ -1,4 +1,4 @@
-import { ChangeEvent, useState } from 'react';
+import { ChangeEvent, useEffect, useState } from 'react';
 import Image from 'next/image';
 import { Input, Pagination, SegmentedControl, Select } from '@mantine/core';
 import { categories, products } from '@prisma/client';
@@ -67,6 +67,10 @@ export default function Products() {
   //     .then(res => res.json())
   //     .then(data => setProducts(data.items));
   // }, [activePage, selectedCategory, selectedFilter, debouncedKeyword]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [selectedCategory, selectedFilter, debouncedKeyword]);
 
   const { data: products, isLoading: productsIsLoading } = useQuery<
     { items: products[] },
