@@ -1,5 +1,6 @@
 import { ChangeEvent, useEffect, useState } from 'react';
 import Image from 'next/image';
+import { useRouter } from 'next/router';
 import { useSession } from 'next-auth/react';
 import { Input, Pagination, SegmentedControl, Select } from '@mantine/core';
 import { categories, products } from '@prisma/client';
@@ -10,6 +11,7 @@ import { CATEGORY_MAP, FILTERS, TAKE } from '~/constants/products';
 import useDebounce from '~/hooks/useDebounce';
 
 export default function Products() {
+  const router = useRouter();
   const { data: session } = useSession();
 
   // const [products, setProducts] = useState<products[]>([]);
@@ -141,6 +143,7 @@ export default function Products() {
               <div
                 key={item.id}
                 className="md:col-span-6 lg:col-span-4 col-span-12"
+                onClick={() => router.push(`/products/${item.id}`)}
               >
                 <div className="rounded shadow-lg flex flex-col break-word">
                   <div className="relative pb-[100%] overflow-hidden">
