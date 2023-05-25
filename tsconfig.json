@@ -25,7 +25,8 @@
   "ts-node": {
     "compilerOptions": {
       "types": ["node"],
-      "module": "commonjs"
+      "module": "commonjs",
+      "typeRoots": ["./src/types"]
     }
   }
 }

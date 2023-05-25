@@ -37,7 +37,7 @@ export default async function handler(
 ) {
   const { name } = req.query;
 
-  if (name === null) {
+  if (name == null) {
     return res.status(400).json({ message: 'No name' });
   }
 

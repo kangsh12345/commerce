@@ -54,7 +54,7 @@ export default function Products() {
   const { id: productId } = router.query;
 
   useEffect(() => {
-    if (productId !== null) {
+    if (productId != null) {
       fetch(`/api/get-product?id=${productId}`)
         .then(res => res.json())
         .then(data => {

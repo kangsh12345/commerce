@@ -27,7 +27,7 @@ export default async function handler(
   res: NextApiResponse<Data>,
 ) {
   const { id } = req.query;
-  if (id === null) {
+  if (id == null) {
     res.status(400).json({ message: `no id` });
     return;
   }

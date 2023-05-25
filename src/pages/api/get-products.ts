@@ -59,7 +59,7 @@ export default async function handler(
   res: NextApiResponse<Data>,
 ) {
   const { skip, take, category, orderBy, contains } = req.query;
-  if (skip === null || take === null) {
+  if (skip == null || take == null) {
     res.status(400).json({ message: 'no skip or take' });
   }
 
