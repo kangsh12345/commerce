@@ -18,7 +18,7 @@ export async function getServerSideProps({
   params,
 }: GetServerSidePropsContext) {
   const product = await fetch(
-    `http://localhost:3000/api/get-product?id=${params?.id}`,
+    `http://127.0.0.1:3000//api/get-product?id=${params?.id}`,
   )
     .then(res => res.json())
     .then(data => data.items);
@@ -79,6 +79,12 @@ export default function Products(props: {
         );
 
         return () => queryClient.setQueryData([WISHLIST_QUERY_KEY], previous);
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries([WISHLIST_QUERY_KEY]);
+      },
+      onError: (error, _, context) => {
+        queryClient.setQueryData([WISHLIST_QUERY_KEY], context.previous);
       },
     },
   );
@@ -147,6 +153,7 @@ export default function Products(props: {
             </div>
             <>{wishlist}</>
             <Button
+              disabled={wishlist == null}
               leftIcon={
                 isWished ? (
                   <IconHeartbeat size={20} stroke={1.5} />
