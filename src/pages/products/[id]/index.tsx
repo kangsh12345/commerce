@@ -78,7 +78,7 @@ export default function Products(props: {
             : [],
         );
 
-        return { previous };
+        return () => queryClient.setQueryData([WISHLIST_QUERY_KEY], previous);
       },
     },
   );

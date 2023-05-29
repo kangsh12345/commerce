@@ -18,7 +18,8 @@
     "paths": {
       "~/*": ["./*"]
     },
-    "types": ["@emotion/react/types/css-prop"]
+    "typeRoots": ["types"],
+    "jsxImportSource": "@emotion/react"
   },
   "include": ["next-env.d.ts", "**/* .ts", "**/*.tsx"],
   "exclude": ["node_modules"],
@@ -26,7 +27,6 @@
     "compilerOptions": {
       "types": ["node"],
       "module": "commonjs",
-      "typeRoots": ["./src/types"]
     }
   }
 }
