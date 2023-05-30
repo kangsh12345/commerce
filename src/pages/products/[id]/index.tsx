@@ -99,7 +99,7 @@ export default function Products(props: {
   return (
     <>
       {product != null && productId != null ? (
-        <div className="p-24 flex flex-row">
+        <div className="flex flex-row">
           <div className="max-w-600 mr-52">
             <Carousel
               animation="fade"
