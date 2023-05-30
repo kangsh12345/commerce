@@ -12,6 +12,7 @@ import { convertFromRaw, EditorState } from 'draft-js';
 import Carousel from 'nuka-carousel';
 
 import { CustomEditor } from '~/components/Editor/Editor';
+import { CarouselImage } from '~/components/Image/CarouselImage';
 import { CATEGORY_MAP } from '~/constants/products';
 
 export async function getServerSideProps({
@@ -100,50 +101,60 @@ export default function Products(props: {
     <>
       {product != null && productId != null ? (
         <div className="flex flex-row">
-          <div className="max-w-600 mr-52">
+          <div>
             <Carousel
               animation="fade"
-              // autoplay
               withoutControls
               wrapAround
-              // speed={10}
               autoplayInterval={3000}
               slideIndex={index}
+              className="max-w-[calc(100vw-663px)]"
             >
               {product.images.map((url, idx) => (
-                <Image
+                <div
                   key={`url-carousel-${idx}`}
-                  src={url}
-                  alt="image"
-                  width={600}
-                  height={600}
-                  style={{ width: '100%', height: '100%' }}
-                />
+                  className="flex justify-center"
+                >
+                  <CarouselImage url={url} />
+                </div>
               ))}
             </Carousel>
-            <div className="flex space-x-4 mt-2">
+
+            <div className="flex space-x-4 mt-6 justify-center">
               {product.images.map((url, idx) => (
                 <div
                   key={`url-thumb-${idx}`}
                   onClick={() => {
                     setIndex(idx);
                   }}
+                  style={{
+                    position: 'relative',
+                    overflow: 'hidden',
+                    height: '165px',
+                    width: '155px',
+                  }}
                 >
                   <Image
                     src={url}
                     alt="image"
-                    width={100}
-                    height={100}
-                    style={{ width: '100%', height: '100%' }}
+                    fill
+                    style={{
+                      objectFit: 'cover',
+                      backgroundPosition: '50% 50%',
+                    }}
                   />
                 </div>
               ))}
             </div>
             {editorState != null && (
-              <CustomEditor editorState={editorState} readOnly={true} />
+              <div className="flex justify-center">
+                <div className="basis-[800px]">
+                  <CustomEditor editorState={editorState} readOnly={true} />
+                </div>
+              </div>
             )}
           </div>
-          <div className="max-w-600 flex flex-col space-y-6">
+          <div className="flex flex-col space-y-6 basis-[360px] ml-24">
             <div className="text-lg text-zinc-400">
               {CATEGORY_MAP[product.category_id - 1]}
             </div>

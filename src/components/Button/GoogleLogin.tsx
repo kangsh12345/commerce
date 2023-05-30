@@ -4,18 +4,19 @@ import { Button } from './Button';
 
 export function GoogleLogin() {
   const { data: session } = useSession();
-  if (session) {
-    return (
-      <div>
-        Signed in as {session.user?.email} <br />
-        <Button onClick={() => signOut()}>Sign out</Button>
-      </div>
-    );
-  }
   return (
-    <div>
-      Not signed in <br />
-      <Button onClick={() => signIn()}>Sign in</Button>
+    <div className="flex flex-col">
+      {session ? (
+        <>
+          Signed in as {session.user?.email} <br />
+          <Button onClick={() => signOut()}>Sign out</Button>
+        </>
+      ) : (
+        <>
+          Not signed in <br />
+          <Button onClick={() => signIn()}>Sign in</Button>
+        </>
+      )}
     </div>
   );
 }
