@@ -122,49 +122,51 @@ export default function Products(props: {
       {product != null && productId != null ? (
         <div className="flex flex-row">
           <div>
-            <Carousel
-              animation="fade"
-              withoutControls
-              wrapAround
-              autoplayInterval={3000}
-              slideIndex={index}
-              className="max-w-[calc(100vw-663px)]"
-            >
-              {product.images.map((url, idx) => (
-                <div
-                  key={`url-carousel-${idx}`}
-                  className="flex justify-center"
-                >
-                  <CarouselImage url={url} />
-                </div>
-              ))}
-            </Carousel>
-
-            <div className="flex space-x-4 mt-6 justify-center">
-              {product.images.map((url, idx) => (
-                <div
-                  key={`url-thumb-${idx}`}
-                  onClick={() => {
-                    setIndex(idx);
-                  }}
-                  style={{
-                    position: 'relative',
-                    overflow: 'hidden',
-                    height: '165px',
-                    width: '155px',
-                  }}
-                >
-                  <Image
-                    src={url}
-                    alt="image"
-                    fill
-                    style={{
-                      objectFit: 'cover',
-                      backgroundPosition: '50% 50%',
+            <div className="flex space-x-4">
+              <div className="flex flex-col space-y-4 mt-6 justify-center">
+                {product.images.map((url, idx) => (
+                  <div
+                    key={`url-thumb-${idx}`}
+                    onClick={() => {
+                      setIndex(idx);
                     }}
-                  />
-                </div>
-              ))}
+                    style={{
+                      position: 'relative',
+                      overflow: 'hidden',
+                      height: '165px',
+                      width: '155px',
+                    }}
+                  >
+                    <Image
+                      src={url}
+                      alt="image"
+                      fill
+                      style={{
+                        objectFit: 'cover',
+                        backgroundPosition: '50% 50%',
+                      }}
+                    />
+                  </div>
+                ))}
+              </div>
+
+              <Carousel
+                animation="fade"
+                withoutControls
+                wrapAround
+                autoplayInterval={3000}
+                slideIndex={index}
+                className="max-w-[calc(100vw-818px)]"
+              >
+                {product.images.map((url, idx) => (
+                  <div
+                    key={`url-carousel-${idx}`}
+                    className="flex justify-center"
+                  >
+                    <CarouselImage url={url} />
+                  </div>
+                ))}
+              </Carousel>
             </div>
             {editorState != null && (
               <div className="flex justify-center">
