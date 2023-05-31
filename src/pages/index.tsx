@@ -71,7 +71,7 @@ export default function Home() {
 
   return (
     <div>
-      <div className="mb-4">
+      <div className="mb-4 mt-24">
         <Input
           icon={<IconSearch />}
           placeholder="검색어를 입력해주세요."

@@ -5,12 +5,17 @@ import { useRouter } from 'next/router';
 import { useSession } from 'next-auth/react';
 import { Button } from '@mantine/core';
 import { products } from '@prisma/client';
-import { IconHeart, IconHeartbeat } from '@tabler/icons-react';
+import {
+  IconHeart,
+  IconHeartbeat,
+  IconShoppingCart,
+} from '@tabler/icons-react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { convertFromRaw, EditorState } from 'draft-js';
 import Carousel from 'nuka-carousel';
 
+import { CountControl } from '~/components/CountControl/CountControl';
 import { CustomEditor } from '~/components/Editor/Editor';
 import { CarouselImage } from '~/components/Image/CarouselImage';
 import { CATEGORY_MAP } from '~/constants/products';
@@ -40,6 +45,7 @@ export default function Products(props: {
   const { id: productId } = router.query;
 
   const [index, setIndex] = useState(0);
+  const [value, setValue] = useState<number | ''>(1);
   const { data: session } = useSession();
   const [editorState] = useState<EditorState | undefined>(() =>
     props.product.contents
@@ -91,6 +97,20 @@ export default function Products(props: {
   );
 
   const product = props.product;
+
+  const vaildate = (type: 'cart' | 'order') => {
+    if (type === 'cart') {
+      if (value == null) {
+        alert('최소 수량을 선택하세요.');
+      }
+
+      //TODO: 장바구니에 등록하는 기능 추가
+
+      router.push('/cart');
+    } else if (type === 'order') {
+      router.push('/order');
+    }
+  };
 
   const isWished =
     wishlist != null && productId != null
@@ -162,35 +182,62 @@ export default function Products(props: {
             <div className="text-lg">
               {product.price.toLocaleString('ko-kr')} 원
             </div>
-            <>{wishlist}</>
-            <Button
-              disabled={wishlist == null}
-              leftIcon={
-                isWished ? (
-                  <IconHeartbeat size={20} stroke={1.5} />
-                ) : (
-                  <IconHeart size={20} stroke={1.5} />
-                )
-              }
-              className={`${
-                isWished
-                  ? 'bg-red-500 hover:bg-red-600'
-                  : 'bg-gray-500 hover:bg-gray-600'
-              }`}
-              radius="xl"
-              size="md"
-              styles={{ root: { paddingRight: 14, height: 48 } }}
-              onClick={() => {
-                if (session == null) {
-                  alert('로그인 필요');
-                  router.push('/auth/login');
-                  return;
+            <div className="flex flex-col space-y-0.5">
+              <span className="text-sm text-zinc-500">수량</span>
+              <CountControl
+                value={value}
+                setValue={setValue}
+                min={1}
+                max={99}
+              />
+            </div>
+            <div className="flex space-x-4">
+              <Button
+                leftIcon={<IconShoppingCart size={20} stroke={1.5} />}
+                className={'bg-black hover:bg-gray-950 flex-1'}
+                radius="xl"
+                size="md"
+                styles={{ root: { paddingRight: 14, height: 48 } }}
+                onClick={() => {
+                  if (session == null) {
+                    alert('로그인 필요');
+                    router.push('/auth/login');
+                    return;
+                  }
+                  vaildate('cart');
+                }}
+              >
+                장바구니
+              </Button>
+              <Button
+                disabled={wishlist == null}
+                leftIcon={
+                  isWished ? (
+                    <IconHeartbeat size={20} stroke={1.5} />
+                  ) : (
+                    <IconHeart size={20} stroke={1.5} />
+                  )
                 }
-                mutate(String(productId));
-              }}
-            >
-              찜하기
-            </Button>
+                className={`${
+                  isWished
+                    ? 'bg-red-500 hover:bg-red-600'
+                    : 'bg-gray-500 hover:bg-gray-600'
+                }`}
+                radius="xl"
+                size="md"
+                styles={{ root: { paddingRight: 14, height: 48 } }}
+                onClick={() => {
+                  if (session == null) {
+                    alert('로그인 필요');
+                    router.push('/auth/login');
+                    return;
+                  }
+                  mutate(String(productId));
+                }}
+              >
+                찜하기
+              </Button>
+            </div>
             <div className="text-sm text-zinc-300">
               등록: {format(new Date(product.createdAt), 'yyyy년 M월 d일')}
             </div>

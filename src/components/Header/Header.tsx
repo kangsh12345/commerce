@@ -9,7 +9,7 @@ export function Header() {
 
   return (
     <div className="mt-8 mb-12">
-      <div className="w-fuull flex h-50 items-center">
+      <div className="w-full flex h-50 items-center">
         <IconHome onClick={() => router.push('/')} />
         <span className="m-auto" />
         <IconShoppingCart
