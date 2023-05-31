@@ -2,7 +2,12 @@ import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { useSession } from 'next-auth/react';
 import styled from '@emotion/styled';
-import { IconHome, IconShoppingCart, IconUser } from '@tabler/icons-react';
+import {
+  IconHeart,
+  IconHome,
+  IconShoppingCart,
+  IconUser,
+} from '@tabler/icons-react';
 
 export function Header() {
   const { data: session } = useSession();
@@ -13,6 +18,7 @@ export function Header() {
       <HeaderContainer>
         <IconHome onClick={() => router.push('/')} />
         <span className="m-auto" />
+        <IconHeart className="mr-4" onClick={() => router.push('/wishlist')} />
         <IconShoppingCart
           className="mr-4"
           onClick={() => router.push('/cart')}
