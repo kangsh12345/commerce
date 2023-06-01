@@ -2,8 +2,8 @@ import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { useSession } from 'next-auth/react';
 import { products } from '@prisma/client';
-import { IconHeartFilled } from '@tabler/icons-react';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { IconHeart, IconHeartFilled } from '@tabler/icons-react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { CATEGORY_MAP } from '~/constants/products';
 
@@ -11,6 +11,7 @@ const WISHLIST_PRODUCTS_QUERY_KEY = `/api/get-wishlist-products`;
 
 export default function Wishlist() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { data: session } = useSession();
 
   const { data: products } = useQuery<
@@ -23,13 +24,45 @@ export default function Wishlist() {
     select: data => data.items,
   });
 
-  const { mutate } = useMutation<unknown, unknown, string, any>(productId =>
-    fetch('/api/update-wishlist', {
-      method: 'POST',
-      body: JSON.stringify({ productId }),
-    })
-      .then(res => res.json())
-      .then(data => data.items),
+  const { mutate } = useMutation<unknown, unknown, string, any>(
+    productId =>
+      fetch('/api/update-wishlist', {
+        method: 'POST',
+        body: JSON.stringify({ productId }),
+      })
+        .then(res => res.json())
+        .then(data => data.items),
+
+    {
+      onMutate: async productId => {
+        await queryClient.cancelQueries([WISHLIST_PRODUCTS_QUERY_KEY]);
+
+        const previous = queryClient.getQueryData([
+          WISHLIST_PRODUCTS_QUERY_KEY,
+        ]);
+
+        queryClient.setQueryData<products[]>(
+          [WISHLIST_PRODUCTS_QUERY_KEY],
+          old =>
+            old &&
+            Object.values(old).filter(item => {
+              return item.category_id !== Number(productId);
+            }),
+        );
+
+        return () =>
+          queryClient.setQueryData([WISHLIST_PRODUCTS_QUERY_KEY], previous);
+      },
+      onError: (error, _, context) => {
+        queryClient.setQueryData(
+          [WISHLIST_PRODUCTS_QUERY_KEY],
+          context.previous,
+        );
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries([WISHLIST_PRODUCTS_QUERY_KEY]);
+      },
+    },
   );
 
   return (
@@ -52,12 +85,14 @@ export default function Wishlist() {
                       return;
                     } else {
                       mutate(String(item.id));
-                      alert('상품을 관심목록에서 삭제했습니다.');
-                      router.reload();
                     }
                   }}
                 >
-                  <IconHeartFilled size={26} className="text-red-500" />
+                  {products.find(p => p.id === item.id) ? (
+                    <IconHeartFilled size={26} className="text-red-500" />
+                  ) : (
+                    <IconHeart size={26} className="text-red-500" />
+                  )}
                 </div>
                 <div
                   className="rounded shadow-lg flex flex-col break-word"

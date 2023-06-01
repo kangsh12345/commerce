@@ -16,9 +16,7 @@ async function getWishlistProducts(userId: string) {
       })
       .then(item => item?.productIds.split(',').map(Number));
 
-    if (wishlist == null) {
-      return [];
-    } else if (wishlist) {
+    if (wishlist && wishlist.length > 0) {
       const response = await prisma.products.findMany({
         where: {
           id: { in: wishlist },
@@ -26,6 +24,8 @@ async function getWishlistProducts(userId: string) {
       });
 
       return response;
+    } else {
+      return [];
     }
   } catch (error) {
     console.error(error);
