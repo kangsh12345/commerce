@@ -170,7 +170,7 @@ const Item = (props: CartItem) => {
     }
   }, [quantity, props.price]);
 
-  const { mutate } = useMutation<unknown, unknown, Cart, any>(
+  const { mutate: updateCart } = useMutation<unknown, unknown, Cart, any>(
     item =>
       fetch('/api/update-cart', {
         method: 'POST',
@@ -199,18 +199,50 @@ const Item = (props: CartItem) => {
     },
   );
 
+  const { mutate: deleteCart } = useMutation<unknown, unknown, number, any>(
+    id =>
+      fetch('/api/delete-cart', {
+        method: 'POST',
+        body: JSON.stringify({ id }),
+      })
+        .then(res => res.json())
+        .then(data => data.items),
+    {
+      onMutate: async id => {
+        await queryClient.cancelQueries([CART_QUERY_KEY]);
+
+        const previous = queryClient.getQueryData([CART_QUERY_KEY]);
+
+        queryClient.setQueryData<Cart[]>([CART_QUERY_KEY], old =>
+          old?.filter(c => c.id !== id),
+        );
+
+        return { previous };
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries([CART_QUERY_KEY]);
+      },
+      onError: (error, _, context) => {
+        queryClient.setQueryData([CART_QUERY_KEY], context.previous);
+      },
+    },
+  );
+
   const handleUpdate = () => {
-    //TODO: 장바구니에서 삭제 기능 구현
     if (quantity === '') {
       alert('최소 수량을 선택하세요.');
       return;
     }
-    mutate({ ...props, quantity: quantity, amount: props.price * quantity });
+    updateCart({
+      ...props,
+      quantity: quantity,
+      amount: props.price * quantity,
+    });
   };
 
-  const handleDelete = () => {
-    //TODO: 장바구니에서 삭제 기능 구현
-    alert(`장바구니에서 ${props.name} 삭제`);
+  const handleDelete = async () => {
+    alert(`장바구니에서 ${props.name} 삭제되었습니다`);
+    await deleteCart(props.id);
   };
 
   return (
