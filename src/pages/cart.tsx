@@ -5,7 +5,7 @@ import styled from '@emotion/styled';
 import { Button } from '@mantine/core';
 import { Cart, products } from '@prisma/client';
 import { IconRefresh, IconX } from '@tabler/icons-react';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { CountControl } from '~/components/CountControl/CountControl';
 import { CATEGORY_MAP } from '~/constants/products';
@@ -16,6 +16,8 @@ interface CartItem extends Cart {
   image_url: string;
 }
 
+const CART_QUERY_KEY = '/api/get-cart';
+
 export default function CartPage() {
   const router = useRouter();
 
@@ -24,9 +26,9 @@ export default function CartPage() {
     unknown,
     CartItem[]
   >({
-    queryKey: [`/api/get-cart`],
+    queryKey: [CART_QUERY_KEY],
     queryFn: () =>
-      fetch(`/api/get-cart`)
+      fetch(CART_QUERY_KEY)
         .then(res => res.json())
         .then(data => data.items),
   });
@@ -157,6 +159,7 @@ export default function CartPage() {
 
 const Item = (props: CartItem) => {
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const [quantity, setQuantity] = useState<number | ''>(props.quantity);
   const [amount, setAmount] = useState<number>(props.quantity);
@@ -167,9 +170,42 @@ const Item = (props: CartItem) => {
     }
   }, [quantity, props.price]);
 
+  const { mutate } = useMutation<unknown, unknown, Cart, any>(
+    item =>
+      fetch('/api/update-cart', {
+        method: 'POST',
+        body: JSON.stringify({ item }),
+      })
+        .then(res => res.json())
+        .then(data => data.items),
+    {
+      onMutate: async item => {
+        await queryClient.cancelQueries([CART_QUERY_KEY]);
+
+        const previous = queryClient.getQueryData([CART_QUERY_KEY]);
+
+        queryClient.setQueryData<Cart[]>([CART_QUERY_KEY], old =>
+          old?.filter(c => c.id !== item.id).concat(item),
+        );
+
+        return { previous };
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries([CART_QUERY_KEY]);
+      },
+      onError: (error, _, context) => {
+        queryClient.setQueryData([CART_QUERY_KEY], context.previous);
+      },
+    },
+  );
+
   const handleUpdate = () => {
     //TODO: 장바구니에서 삭제 기능 구현
-    alert(`장바구니에서 ${props.name} 수정`);
+    if (quantity === '') {
+      alert('최소 수량을 선택하세요.');
+      return;
+    }
+    mutate({ ...props, quantity: quantity, amount: props.price * quantity });
   };
 
   const handleDelete = () => {
