@@ -8,6 +8,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { CATEGORY_MAP } from '~/constants/products';
 
 const WISHLIST_PRODUCTS_QUERY_KEY = `/api/get-wishlist-products`;
+const WISHLIST_QUERY_KEY = '/api/get-wishlist';
 
 export default function Wishlist() {
   const router = useRouter();
@@ -24,6 +25,14 @@ export default function Wishlist() {
     select: data => data.items,
   });
 
+  const { data: wishlist } = useQuery({
+    queryKey: [WISHLIST_QUERY_KEY],
+    queryFn: () =>
+      fetch(WISHLIST_QUERY_KEY)
+        .then(res => res.json())
+        .then(data => data.items),
+  });
+
   const { mutate } = useMutation<unknown, unknown, string, any>(
     productId =>
       fetch('/api/update-wishlist', {
@@ -32,35 +41,27 @@ export default function Wishlist() {
       })
         .then(res => res.json())
         .then(data => data.items),
-
     {
       onMutate: async productId => {
-        await queryClient.cancelQueries([WISHLIST_PRODUCTS_QUERY_KEY]);
+        await queryClient.cancelQueries([WISHLIST_QUERY_KEY]);
 
-        const previous = queryClient.getQueryData([
-          WISHLIST_PRODUCTS_QUERY_KEY,
-        ]);
+        const previous = queryClient.getQueryData([WISHLIST_QUERY_KEY]);
 
-        queryClient.setQueryData<products[]>(
-          [WISHLIST_PRODUCTS_QUERY_KEY],
-          old =>
-            old &&
-            Object.values(old).filter(item => {
-              return item.category_id !== Number(productId);
-            }),
+        queryClient.setQueryData<string[]>([WISHLIST_QUERY_KEY], old =>
+          old
+            ? old.includes(String(productId))
+              ? old.filter(id => id !== String(productId))
+              : old.concat(String(productId))
+            : [],
         );
 
-        return () =>
-          queryClient.setQueryData([WISHLIST_PRODUCTS_QUERY_KEY], previous);
-      },
-      onError: (error, _, context) => {
-        queryClient.setQueryData(
-          [WISHLIST_PRODUCTS_QUERY_KEY],
-          context.previous,
-        );
+        return () => queryClient.setQueryData([WISHLIST_QUERY_KEY], previous);
       },
       onSuccess: () => {
-        queryClient.invalidateQueries([WISHLIST_PRODUCTS_QUERY_KEY]);
+        queryClient.invalidateQueries([WISHLIST_QUERY_KEY]);
+      },
+      onError: (error, _, context) => {
+        queryClient.setQueryData([WISHLIST_QUERY_KEY], context.previous);
       },
     },
   );
@@ -88,10 +89,12 @@ export default function Wishlist() {
                     }
                   }}
                 >
-                  {products.find(p => p.id === item.id) ? (
+                  {wishlist != null &&
+                  item.id !== null &&
+                  wishlist.includes(String(item.id)) ? (
                     <IconHeartFilled size={26} className="text-red-500" />
                   ) : (
-                    <IconHeart size={26} className="text-red-500" />
+                    <IconHeart size={26} className="text-gray-500" />
                   )}
                 </div>
                 <div
