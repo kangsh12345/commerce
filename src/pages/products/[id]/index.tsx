@@ -19,6 +19,7 @@ import { CountControl } from '~/components/CountControl/CountControl';
 import { CustomEditor } from '~/components/Editor/Editor';
 import { CarouselImage } from '~/components/Image/CarouselImage';
 import { CATEGORY_MAP } from '~/constants/products';
+import { CART_QUERY_KEY } from '~/pages/cart';
 
 export async function getServerSideProps({
   params,
@@ -102,29 +103,35 @@ export default function Products(props: {
     unknown,
     Omit<Cart, 'id' | 'userId'>,
     any
-  >(item =>
-    fetch('/api/add-cart', {
-      method: 'POST',
-      body: JSON.stringify({ item }),
-    })
-      .then(res => res.json())
-      .then(data => data.items),
+  >(
+    item =>
+      fetch('/api/add-cart', {
+        method: 'POST',
+        body: JSON.stringify({ item }),
+      })
+        .then(res => res.json())
+        .then(data => data.items),
+    {
+      onMutate: () => {
+        queryClient.invalidateQueries([CART_QUERY_KEY]);
+      },
+      onSuccess: () => {
+        router.push('/cart');
+      },
+    },
   );
 
-  const validate = async (type: 'cart' | 'order') => {
+  const validate = (type: 'cart' | 'order') => {
     if (type === 'cart') {
       if (value == '') {
         alert('최소 수량을 선택하세요.');
         return;
-      } else {
-        await addCart({
-          productId: product.id,
-          quantity: value,
-          amount: product.price * value,
-        });
       }
-
-      router.push('/cart');
+      addCart({
+        productId: product.id,
+        quantity: value,
+        amount: product.price * value,
+      });
     } else if (type === 'order') {
       router.push('/order');
     }

@@ -16,7 +16,7 @@ interface CartItem extends Cart {
   image_url: string;
 }
 
-const CART_QUERY_KEY = '/api/get-cart';
+export const CART_QUERY_KEY = '/api/get-cart';
 
 export default function CartPage() {
   const router = useRouter();
@@ -240,9 +240,9 @@ const Item = (props: CartItem) => {
     });
   };
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
     alert(`장바구니에서 ${props.name} 삭제되었습니다`);
-    await deleteCart(props.id);
+    deleteCart(props.id);
   };
 
   return (
