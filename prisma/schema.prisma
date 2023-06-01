@@ -96,7 +96,7 @@ model WishList {
 model Cart {
   id Int @id @default(autoincrement())
   userId String
-  productId String
+  productId Int
   quantity Int
   amount Int
 }

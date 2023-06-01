@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { useSession } from 'next-auth/react';
 import { Button } from '@mantine/core';
-import { products } from '@prisma/client';
+import { Cart, products } from '@prisma/client';
 import {
   IconHeart,
   IconHeartbeat,
@@ -40,6 +40,7 @@ const WISHLIST_QUERY_KEY = '/api/get-wishlist';
 export default function Products(props: {
   product: products & { images: string[] };
 }) {
+  const product = props.product;
   const router = useRouter();
   const queryClient = useQueryClient();
   const { id: productId } = router.query;
@@ -96,15 +97,32 @@ export default function Products(props: {
     },
   );
 
-  const product = props.product;
+  const { mutate: addCart } = useMutation<
+    unknown,
+    unknown,
+    Omit<Cart, 'id' | 'userId'>,
+    any
+  >(item =>
+    fetch('/api/add-cart', {
+      method: 'POST',
+      body: JSON.stringify({ item }),
+    })
+      .then(res => res.json())
+      .then(data => data.items),
+  );
 
-  const vaildate = (type: 'cart' | 'order') => {
+  const validate = async (type: 'cart' | 'order') => {
     if (type === 'cart') {
-      if (value == null) {
+      if (value == '') {
         alert('최소 수량을 선택하세요.');
+        return;
+      } else {
+        await addCart({
+          productId: product.id,
+          quantity: value,
+          amount: product.price * value,
+        });
       }
-
-      //TODO: 장바구니에 등록하는 기능 추가
 
       router.push('/cart');
     } else if (type === 'order') {
@@ -206,7 +224,7 @@ export default function Products(props: {
                     router.push('/auth/login');
                     return;
                   }
-                  vaildate('cart');
+                  validate('cart');
                 }}
               >
                 장바구니
