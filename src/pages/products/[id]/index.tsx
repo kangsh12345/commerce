@@ -221,7 +221,8 @@ export default function Products(props: {
             <div className="flex space-x-4">
               <Button
                 leftIcon={<IconShoppingCart size={20} stroke={1.5} />}
-                className={'bg-black hover:bg-gray-950 flex-1'}
+                color="dark"
+                className={'flex-1'}
                 radius="xl"
                 size="md"
                 styles={{ root: { paddingRight: 14, height: 48 } }}
@@ -265,6 +266,22 @@ export default function Products(props: {
                 찜하기
               </Button>
             </div>
+            <Button
+              className={'bg-black hover:bg-gray-950'}
+              radius="xl"
+              size="md"
+              styles={{ root: { paddingRight: 14, height: 48 } }}
+              onClick={() => {
+                if (session == null) {
+                  alert('로그인 필요');
+                  router.push('/auth/login');
+                  return;
+                }
+                validate('cart');
+              }}
+            >
+              구매하기
+            </Button>
             <div className="text-sm text-zinc-300">
               등록: {format(new Date(product.createdAt), 'yyyy년 M월 d일')}
             </div>

@@ -100,7 +100,7 @@ export default function CartPage() {
             </Row>
 
             <Button
-              className={'bg-black hover:bg-gray-950'}
+              color="dark"
               radius="xl"
               size="md"
               styles={{ root: { height: 48 } }}
