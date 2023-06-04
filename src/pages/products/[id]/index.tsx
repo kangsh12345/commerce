@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { useSession } from 'next-auth/react';
 import { Button } from '@mantine/core';
-import { Cart, products } from '@prisma/client';
+import { Cart, OrderItem, products } from '@prisma/client';
 import {
   IconHeart,
   IconHeartbeat,
@@ -20,6 +20,7 @@ import { CustomEditor } from '~/components/Editor/Editor';
 import { CarouselImage } from '~/components/Image/CarouselImage';
 import { CATEGORY_MAP } from '~/constants/products';
 import { CART_QUERY_KEY } from '~/pages/cart';
+import { ORDER_QUERY_KEY } from '~/pages/my';
 
 export async function getServerSideProps({
   params,
@@ -121,19 +122,50 @@ export default function Products(props: {
     },
   );
 
+  const { mutate: addOrder } = useMutation<
+    unknown,
+    unknown,
+    Array<Omit<OrderItem, 'id'>>,
+    any
+  >(
+    items =>
+      fetch('/api/add-order', {
+        method: 'POST',
+        body: JSON.stringify({ items }),
+      })
+        .then(res => res.json())
+        .then(data => data.items),
+    {
+      onMutate: () => {
+        queryClient.invalidateQueries([ORDER_QUERY_KEY]);
+      },
+      onSuccess: () => {
+        router.push('/my');
+      },
+    },
+  );
+
   const validate = (type: 'cart' | 'order') => {
+    if (value == '') {
+      alert('최소 수량을 선택하세요.');
+      return;
+    }
+
     if (type === 'cart') {
-      if (value == '') {
-        alert('최소 수량을 선택하세요.');
-        return;
-      }
       addCart({
         productId: product.id,
         quantity: value,
         amount: product.price * value,
       });
     } else if (type === 'order') {
-      router.push('/order');
+      addOrder([
+        {
+          productId: product.id,
+          quantity: value,
+          price: product.price,
+          amount: product.price * value,
+        },
+      ]);
     }
   };
 
@@ -267,7 +299,8 @@ export default function Products(props: {
               </Button>
             </div>
             <Button
-              className={'bg-black hover:bg-gray-950'}
+              variant="outline"
+              color="dark"
               radius="xl"
               size="md"
               styles={{ root: { paddingRight: 14, height: 48 } }}
@@ -277,7 +310,7 @@ export default function Products(props: {
                   router.push('/auth/login');
                   return;
                 }
-                validate('cart');
+                validate('order');
               }}
             >
               구매하기

@@ -55,6 +55,7 @@ interface QuantityInputProps {
   setValue: Dispatch<SetStateAction<number | ''>>;
   min?: number;
   max?: number;
+  disabled?: boolean;
 }
 
 export function CountControl({
@@ -62,6 +63,7 @@ export function CountControl({
   setValue,
   min = 1,
   max = 10,
+  disabled = false,
 }: QuantityInputProps) {
   const { classes } = useStyles();
   const handlers = useRef<NumberInputHandlers>(null);
@@ -72,7 +74,7 @@ export function CountControl({
         size={28}
         variant="transparent"
         onClick={() => handlers.current?.decrement()}
-        disabled={value === min}
+        disabled={disabled ?? value === min}
         className={classes.control}
         onMouseDown={event => event.preventDefault()}
       >
@@ -94,7 +96,7 @@ export function CountControl({
         size={28}
         variant="transparent"
         onClick={() => handlers.current?.increment()}
-        disabled={value === max}
+        disabled={disabled ?? value === max}
         className={classes.control}
         onMouseDown={event => event.preventDefault()}
       >
