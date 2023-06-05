@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
+import { ChangeEvent, FormEvent, useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
-import { Badge, Button } from '@mantine/core';
+import { Badge, Button, Input } from '@mantine/core';
 import { OrderItem, Orders } from '@prisma/client';
-import { IconX } from '@tabler/icons-react';
+import { IconPencil, IconX } from '@tabler/icons-react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 
@@ -66,6 +66,11 @@ export default function My() {
 }
 
 const DetailItem = (props: OrderDetail) => {
+  const [toggle, setToggle] = useState(false);
+  const [receiver, setReceiver] = useState(props.receiver);
+  const [address, setAddress] = useState(props.address);
+  const [phoneNumber, setPhoneNumber] = useState(props.phoneNumber);
+
   const queryClient = useQueryClient();
 
   const { mutate: updateOrderStatus } = useMutation<
@@ -111,6 +116,59 @@ const DetailItem = (props: OrderDetail) => {
     },
   );
 
+  const { mutate: updateOrderInfo } = useMutation<
+    unknown,
+    unknown,
+    Pick<Orders, 'receiver' | 'address' | 'phoneNumber'>,
+    any
+  >(
+    info =>
+      fetch('/api/update-order-info', {
+        method: 'POST',
+        body: JSON.stringify({
+          id: props.id,
+          receiver: info.receiver,
+          address: info.address,
+          phoneNumber: info.phoneNumber,
+          userId: props.userId,
+        }),
+      })
+        .then(res => res.json())
+        .then(data => data.items),
+    {
+      onMutate: async info => {
+        await queryClient.cancelQueries([ORDER_QUERY_KEY]);
+
+        const previous = queryClient.getQueryData([ORDER_QUERY_KEY]);
+
+        queryClient.setQueryData<OrderDetail[]>([ORDER_QUERY_KEY], old =>
+          old?.map(c => {
+            if (c.id === props.id) {
+              return {
+                ...c,
+                receiver: info.receiver,
+                address: info.address,
+                phoneNumber: info.phoneNumber,
+              };
+            }
+            return c;
+          }),
+        );
+
+        return { previous };
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries([ORDER_QUERY_KEY]);
+        alert('저장되었습니다.');
+        setToggle(false);
+      },
+      onError: (error, _, context) => {
+        queryClient.setQueryData([ORDER_QUERY_KEY], context.previous);
+        setToggle(false);
+      },
+    },
+  );
+
   const handlePayment = () => {
     // 주문상태를 5로 바꿈
     if (props.status !== 5) {
@@ -125,11 +183,55 @@ const DetailItem = (props: OrderDetail) => {
     }
   };
 
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
+
+    if (phoneNumber && phoneNumber?.length !== 13) {
+      alert('핸드폰 번호를 정확히 입력해주세요');
+      setPhoneNumber(props.phoneNumber);
+      return;
+    } else if (receiver == null && address == null && phoneNumber == null) {
+      setToggle(false);
+      return;
+    }
+
+    updateOrderInfo({
+      receiver: receiver,
+      address: address,
+      phoneNumber: phoneNumber,
+    });
+  };
+
+  const handleCancelInput = () => {
+    setReceiver(props.receiver);
+    setAddress(props.address);
+    setPhoneNumber(props.phoneNumber);
+    setToggle(false);
+  };
+
+  const handleInput = (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.name === 'receiver') {
+      setReceiver(e.target.value);
+    } else if (e.target.name === 'address') {
+      setAddress(e.target.value);
+    } else if (e.target.name === 'phoneNumber') {
+      setPhoneNumber(
+        e.target.value
+          .replace(/[^0-9]/g, '')
+          .replace(/^(\d{0,3})(\d{0,4})(\d{0,4})$/g, '$1-$2-$3')
+          .replace(/(\-{1,2})$/g, ''),
+      );
+    }
+  };
+
+  const handleToggleOn = () => {
+    setToggle(true);
+  };
+
   return (
     <div
       className="w-full flex flex-col p-4 rounded-md"
       style={{ border: '1px solid gray' }}
-      onClick={() => console.log(props)}
     >
       <div className="flex">
         <Badge color={props.status === -1 ? 'red' : 'blue'} className="mb-2">
@@ -141,13 +243,86 @@ const DetailItem = (props: OrderDetail) => {
         <Item key={idx} {...orderItem} />
       ))}
       <div className="flex mt-4">
-        <div className="flex flex-col space-y-2">
-          <span className="mb-2 text-zinc-400">주문내용</span>
-          <span>받는사람: {props.receiver ?? '입력필요'}</span>
-          <span>주소: {props.address ?? '입력필요'}</span>
-          <span>연락처: {props.phoneNumber ?? '입력필요'}</span>
+        <div className="flex flex-col space-y-2 flex-1 pr-8">
+          {toggle ? (
+            <form onSubmit={handleSubmit}>
+              <div className="flex items-center mb-1.5">
+                <span className="text-zinc-400 py-1.5 pr-1">주문내용</span>
+                <div className="flex space-x-1.5 ml-auto">
+                  <Button
+                    radius="xl"
+                    variant="outline"
+                    size="xs"
+                    color="red"
+                    className="cursor-pointer"
+                    onClick={handleCancelInput}
+                  >
+                    취소
+                  </Button>
+                  <Button
+                    radius="xl"
+                    variant="outline"
+                    size="xs"
+                    color="blue"
+                    className="cursor-pointer"
+                    type={'submit'}
+                  >
+                    저장
+                  </Button>
+                </div>
+              </div>
+              <div className="flex flex-col space-y-4 pt-2">
+                <span>
+                  받는사람:{' '}
+                  <Input
+                    placeholder={receiver ?? '입력 필요'}
+                    name="receiver"
+                    type="text"
+                    value={receiver ?? ''}
+                    onChange={handleInput}
+                  />
+                </span>
+                <span>
+                  주소:{' '}
+                  <Input
+                    placeholder={address ?? '입력필요'}
+                    name="address"
+                    type="text"
+                    value={address ?? ''}
+                    onChange={handleInput}
+                  />
+                </span>
+                <span>
+                  연락처:{' '}
+                  <Input
+                    placeholder={phoneNumber ?? '입력필요'}
+                    name="phoneNumber"
+                    type="text"
+                    value={phoneNumber ?? ''}
+                    maxLength={13}
+                    onChange={handleInput}
+                  />
+                </span>
+              </div>
+            </form>
+          ) : (
+            <>
+              <div className="flex items-center mb-1.5">
+                <span className="text-zinc-400 py-1.5 pr-1">주문내용</span>
+                <IconPencil
+                  className="text-zinc-400 pb-1 cursor-pointer"
+                  onClick={handleToggleOn}
+                  stroke={2}
+                  size={20}
+                />
+              </div>
+              <span>받는사람: {receiver ?? '입력필요'}</span>
+              <span>주소: {address ?? '입력필요'}</span>
+              <span>연락처: {phoneNumber ?? '입력필요'}</span>
+            </>
+          )}
         </div>
-        <div className="flex flex-col ml-auto mr-4 text-right">
+        <div className="flex flex-col text-right">
           <span className="mb-2 font-semibold">
             합계 금액:{' '}
             <span className="text-red-500">
