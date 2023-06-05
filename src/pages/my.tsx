@@ -4,7 +4,7 @@ import { useRouter } from 'next/router';
 import { Badge, Button } from '@mantine/core';
 import { OrderItem, Orders } from '@prisma/client';
 import { IconX } from '@tabler/icons-react';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 
 import { CountControl } from '~/components/CountControl/CountControl';
@@ -66,6 +66,65 @@ export default function My() {
 }
 
 const DetailItem = (props: OrderDetail) => {
+  const queryClient = useQueryClient();
+
+  const { mutate: updateOrderStatus } = useMutation<
+    unknown,
+    unknown,
+    number,
+    any
+  >(
+    status =>
+      fetch('/api/update-order-status', {
+        method: 'POST',
+        body: JSON.stringify({
+          id: props.id,
+          status: status,
+          userId: props.userId,
+        }),
+      })
+        .then(res => res.json())
+        .then(data => data.items),
+    {
+      onMutate: async status => {
+        await queryClient.cancelQueries([ORDER_QUERY_KEY]);
+
+        const previous = queryClient.getQueryData([ORDER_QUERY_KEY]);
+
+        queryClient.setQueryData<OrderDetail[]>([ORDER_QUERY_KEY], old =>
+          old?.map(c => {
+            if (c.id === props.id) {
+              return { ...c, status: status };
+            }
+            return c;
+          }),
+        );
+
+        return { previous };
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries([ORDER_QUERY_KEY]);
+      },
+      onError: (error, _, context) => {
+        queryClient.setQueryData([ORDER_QUERY_KEY], context.previous);
+      },
+    },
+  );
+
+  const handlePayment = () => {
+    // 주문상태를 5로 바꿈
+    if (props.status !== 5) {
+      updateOrderStatus(5);
+    }
+  };
+
+  const handleCancel = () => {
+    //주문상태를 -1로 바꿈
+    if (props.status !== -1) {
+      updateOrderStatus(-1);
+    }
+  };
+
   return (
     <div
       className="w-full flex flex-col p-4 rounded-md"
@@ -76,7 +135,7 @@ const DetailItem = (props: OrderDetail) => {
         <Badge color={props.status === -1 ? 'red' : 'blue'} className="mb-2">
           {ORDER_STATUS_MAP[props.status + 1]}
         </Badge>
-        <IconX className="ml-auto" />
+        <IconX className="ml-auto" onClick={handleCancel} />
       </div>
       {props.orderItems?.map((orderItem, idx) => (
         <Item key={idx} {...orderItem} />
@@ -103,7 +162,9 @@ const DetailItem = (props: OrderDetail) => {
             주문일자:{' '}
             {format(new Date(props.createdAt), 'yyyy년 M월 d일 HH:mm:ss')}
           </span>
-          <Button color="dark">결제 처리</Button>
+          <Button color="dark" onClick={handlePayment}>
+            결제 처리
+          </Button>
         </div>
       </div>
     </div>

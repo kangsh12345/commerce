@@ -210,7 +210,9 @@ const Item = (props: CartItem) => {
     item =>
       fetch('/api/update-cart', {
         method: 'POST',
-        body: JSON.stringify({ item }),
+        body: JSON.stringify({
+          item,
+        }),
       })
         .then(res => res.json())
         .then(data => data.items),
@@ -220,8 +222,14 @@ const Item = (props: CartItem) => {
 
         const previous = queryClient.getQueryData([CART_QUERY_KEY]);
 
-        queryClient.setQueryData<Cart[]>([CART_QUERY_KEY], old =>
-          old?.filter(c => c.id !== item.id).concat(item),
+        queryClient.setQueryData<CartItem[]>([CART_QUERY_KEY], old =>
+          old?.map(c => {
+            if (c.id === item.id) {
+              return { ...c, quantity: item.quantity, amount: item.amount };
+            } else {
+              return c;
+            }
+          }),
         );
 
         return { previous };
@@ -249,7 +257,7 @@ const Item = (props: CartItem) => {
 
         const previous = queryClient.getQueryData([CART_QUERY_KEY]);
 
-        queryClient.setQueryData<Cart[]>([CART_QUERY_KEY], old =>
+        queryClient.setQueryData<CartItem[]>([CART_QUERY_KEY], old =>
           old?.filter(c => c.id !== id),
         );
 
@@ -270,7 +278,9 @@ const Item = (props: CartItem) => {
       return;
     }
     updateCart({
-      ...props,
+      id: props.id,
+      userId: props.userId,
+      productId: props.productId,
       quantity: quantity,
       amount: props.price * quantity,
     });
