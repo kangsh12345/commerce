@@ -171,7 +171,7 @@ const DetailItem = (props: OrderDetail) => {
 
   const handlePayment = () => {
     // 주문상태를 5로 바꿈
-    if (props.status !== 5) {
+    if (props.status !== -1 && props.status !== 5) {
       updateOrderStatus(5);
     }
   };
@@ -185,6 +185,10 @@ const DetailItem = (props: OrderDetail) => {
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
+
+    if (props.status === -1) {
+      return;
+    }
 
     if (phoneNumber && phoneNumber?.length !== 13) {
       alert('핸드폰 번호를 정확히 입력해주세요');
@@ -237,7 +241,9 @@ const DetailItem = (props: OrderDetail) => {
         <Badge color={props.status === -1 ? 'red' : 'blue'} className="mb-2">
           {ORDER_STATUS_MAP[props.status + 1]}
         </Badge>
-        <IconX className="ml-auto" onClick={handleCancel} />
+        {props.status !== -1 && (
+          <IconX className="ml-auto" onClick={handleCancel} />
+        )}
       </div>
       {props.orderItems?.map((orderItem, idx) => (
         <Item key={idx} {...orderItem} />
@@ -309,12 +315,14 @@ const DetailItem = (props: OrderDetail) => {
             <>
               <div className="flex items-center mb-1.5">
                 <span className="text-zinc-400 py-1.5 pr-1">주문내용</span>
-                <IconPencil
-                  className="text-zinc-400 pb-1 cursor-pointer"
-                  onClick={handleToggleOn}
-                  stroke={2}
-                  size={20}
-                />
+                {props.status !== -1 && (
+                  <IconPencil
+                    className="text-zinc-400 pb-1 cursor-pointer"
+                    onClick={handleToggleOn}
+                    stroke={2}
+                    size={20}
+                  />
+                )}
               </div>
               <span>받는사람: {receiver ?? '입력필요'}</span>
               <span>주소: {address ?? '입력필요'}</span>
@@ -333,13 +341,15 @@ const DetailItem = (props: OrderDetail) => {
               원
             </span>
           </span>
-          <span className="text-zinc-400 mt-auto mb-auto">
+          <span className="text-zinc-400 mb-auto">
             주문일자:{' '}
             {format(new Date(props.createdAt), 'yyyy년 M월 d일 HH:mm:ss')}
           </span>
-          <Button color="dark" onClick={handlePayment}>
-            결제 처리
-          </Button>
+          {props.status !== -1 && (
+            <Button color="dark" onClick={handlePayment}>
+              결제 처리
+            </Button>
+          )}
         </div>
       </div>
     </div>
