@@ -12,8 +12,6 @@ interface ResponseProps extends Orders {
 
 async function getOrder(userId: string) {
   try {
-    //TODO: Orders 테이블에서 나의 주문들을 조회한다.
-
     const orders = await prisma.orders.findMany({
       where: {
         userId: userId,
@@ -37,10 +35,6 @@ async function getOrder(userId: string) {
       response.push({ ...order, orderItems });
     }
 
-    // const response =
-    //   await prisma.$queryRaw`SELECT c.id, userId, productId, quantity, amount, price, name, image_url FROM Cart as c JOIN products as p WHERE c.productId=p.id AND c.userId=${userId};`;
-
-    // console.log(response);
     return response;
   } catch (error) {
     console.error(error);

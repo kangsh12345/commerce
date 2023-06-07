@@ -12,8 +12,6 @@ async function addOrder(
   orderInfo?: { receiver: string; address: string; phoneNumber: string },
 ) {
   try {
-    // TODO: orderItem들을만든다.
-
     const orderItemIds = <number[]>[];
 
     for (const item of items) {

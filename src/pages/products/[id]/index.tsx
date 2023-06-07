@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { useSession } from 'next-auth/react';
 import { Button } from '@mantine/core';
-import { Cart, OrderItem, products } from '@prisma/client';
+import { Cart, Comment, OrderItem, products } from '@prisma/client';
 import {
   IconHeart,
   IconHeartbeat,
@@ -15,6 +15,7 @@ import { format } from 'date-fns';
 import { convertFromRaw, EditorState } from 'draft-js';
 import Carousel from 'nuka-carousel';
 
+import { CommentItem } from '~/components/CommentItem/CommentItem';
 import { CountControl } from '~/components/CountControl/CountControl';
 import { CustomEditor } from '~/components/Editor/Editor';
 import { CarouselImage } from '~/components/Image/CarouselImage';
@@ -30,17 +31,28 @@ export async function getServerSideProps({
   )
     .then(res => res.json())
     .then(data => data.items);
+
+  const comments = await fetch(
+    `http://127.0.0.1:3000//api/get-comments?id=${params?.id}`,
+  )
+    .then(res => res.json())
+    .then(data => data.items);
+
   return {
     props: {
       product: { ...product, images: [product.image_url, product.image_url] },
+      comments: comments,
     },
   };
 }
 
 const WISHLIST_QUERY_KEY = '/api/get-wishlist';
 
+export interface CommentItemType extends Comment, OrderItem {}
+
 export default function Products(props: {
   product: products & { images: string[] };
+  comments: CommentItemType[];
 }) {
   const product = props.product;
   const router = useRouter();
@@ -232,6 +244,12 @@ export default function Products(props: {
                 </div>
               </div>
             )}
+            <div>
+              <p className="text-2xl font-semibold">후기</p>
+              {props.comments?.map((comment, idx) => (
+                <CommentItem key={idx} item={comment} />
+              ))}
+            </div>
           </div>
           <div className="flex flex-col space-y-6 basis-[360px] ml-24">
             <div className="text-lg text-zinc-400">

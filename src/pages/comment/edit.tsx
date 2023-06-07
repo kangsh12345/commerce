@@ -56,7 +56,12 @@ export default function CommentEdit() {
 
   return (
     <div>
-      <Rating className="pb-2 pl-1" value={rate} onChange={setRate} />
+      <Rating
+        className="pb-2 pl-1"
+        value={rate}
+        onChange={setRate}
+        color="red"
+      />
       {editorState != null && (
         <CustomEditor
           editorState={editorState}

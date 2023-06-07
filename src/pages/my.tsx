@@ -398,7 +398,7 @@ const Item = (props: OrderItemDetail & { status: number }) => {
       </div>
       <div className="flex flex-col ml-auto">
         <span className="text-center">{amount.toLocaleString('ko-kr')} 원</span>
-        {props.status && (
+        {props.status !== -1 && (
           <Button
             color="cyan"
             size="sm"
