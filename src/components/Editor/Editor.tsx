@@ -27,7 +27,7 @@ export function CustomEditor({
   onEditorStateChange?: Dispatch<SetStateAction<EditorState | undefined>>;
 }) {
   return (
-    <Base>
+    <Wrapper readOnly={readOnly}>
       <Editor
         readOnly={readOnly}
         editorState={editorState}
@@ -44,10 +44,13 @@ export function CustomEditor({
         onEditorStateChange={onEditorStateChange}
       />
       {!readOnly && <Button onClick={onSave}>Save</Button>}
-    </Base>
+    </Wrapper>
   );
 }
 
-const Base = styled.div`
+const Wrapper = styled.div<{ readOnly: boolean }>`
   padding: 16px;
+  text-align: end;
+  ${props =>
+    props.readOnly ? '' : 'border: 1px solid black; border-radius: 8px;'}
 `;
