@@ -245,10 +245,12 @@ export default function Products(props: {
               </div>
             )}
             <div>
-              <p className="text-2xl font-semibold">후기</p>
-              {props.comments?.map((comment, idx) => (
-                <CommentItem key={idx} item={comment} />
-              ))}
+              <p className="text-2xl font-semibold my-2">후기</p>
+              <div className="flex flex-col space-y-4">
+                {props.comments?.map((comment, idx) => (
+                  <CommentItem key={idx} item={comment} />
+                ))}
+              </div>
             </div>
           </div>
           <div className="flex flex-col space-y-6 basis-[360px] ml-24">
