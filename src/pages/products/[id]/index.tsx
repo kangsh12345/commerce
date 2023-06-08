@@ -189,154 +189,156 @@ export default function Products(props: {
   return (
     <>
       {product != null && productId != null ? (
-        <div className="flex flex-row">
-          <div>
-            <div className="flex space-x-4">
-              <div className="flex flex-col space-y-4 mt-6 justify-center">
-                {product.images.map((url, idx) => (
-                  <div
-                    key={`url-thumb-${idx}`}
-                    onClick={() => {
-                      setIndex(idx);
-                    }}
-                    style={{
-                      position: 'relative',
-                      overflow: 'hidden',
-                      height: '165px',
-                      width: '155px',
-                    }}
-                  >
-                    <Image
-                      src={url}
-                      alt="image"
-                      fill
-                      style={{
-                        objectFit: 'cover',
-                        backgroundPosition: '50% 50%',
-                      }}
-                    />
-                  </div>
-                ))}
-              </div>
-
-              <Carousel
-                animation="fade"
-                withoutControls
-                wrapAround
-                autoplayInterval={3000}
-                slideIndex={index}
-                className="max-w-[calc(100vw-818px)]"
-              >
-                {product.images.map((url, idx) => (
-                  <div
-                    key={`url-carousel-${idx}`}
-                    className="flex justify-center"
-                  >
-                    <CarouselImage url={url} />
-                  </div>
-                ))}
-              </Carousel>
-            </div>
-            {editorState != null && (
-              <div className="flex justify-center">
-                <div className="basis-[800px]">
-                  <CustomEditor editorState={editorState} readOnly={true} />
-                </div>
-              </div>
-            )}
+        <div className="flex flex-col pb-12">
+          <div className="flex flex-row">
             <div>
-              <p className="text-2xl font-semibold my-2">후기</p>
-              <div className="flex flex-col space-y-4">
-                {props.comments?.map((comment, idx) => (
-                  <CommentItem key={idx} item={comment} />
-                ))}
+              <div className="flex space-x-4">
+                <div className="flex flex-col space-y-4 mt-6 justify-center">
+                  {product.images.map((url, idx) => (
+                    <div
+                      key={`url-thumb-${idx}`}
+                      onClick={() => {
+                        setIndex(idx);
+                      }}
+                      style={{
+                        position: 'relative',
+                        overflow: 'hidden',
+                        height: '165px',
+                        width: '155px',
+                      }}
+                    >
+                      <Image
+                        src={url}
+                        alt="image"
+                        fill
+                        style={{
+                          objectFit: 'cover',
+                          backgroundPosition: '50% 50%',
+                        }}
+                      />
+                    </div>
+                  ))}
+                </div>
+
+                <Carousel
+                  animation="fade"
+                  withoutControls
+                  wrapAround
+                  autoplayInterval={3000}
+                  slideIndex={index}
+                  className="max-w-[calc(100vw-818px)]"
+                >
+                  {product.images.map((url, idx) => (
+                    <div
+                      key={`url-carousel-${idx}`}
+                      className="flex justify-center"
+                    >
+                      <CarouselImage url={url} />
+                    </div>
+                  ))}
+                </Carousel>
+              </div>
+              {editorState != null && (
+                <div className="flex justify-center">
+                  <div className="basis-[800px]">
+                    <CustomEditor editorState={editorState} readOnly={true} />
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="flex flex-col space-y-6 basis-[360px] ml-24">
+              <div className="text-lg text-zinc-400">
+                {CATEGORY_MAP[product.category_id - 1]}
+              </div>
+              <div className="text-4xl font-semibold">{product.name}</div>
+              <div className="text-lg">
+                {product.price.toLocaleString('ko-kr')} 원
+              </div>
+              <div className="flex flex-col space-y-0.5">
+                <span className="text-sm text-zinc-500">수량</span>
+                <CountControl
+                  value={value}
+                  setValue={setValue}
+                  min={1}
+                  max={99}
+                />
+              </div>
+              <div className="flex space-x-4">
+                <Button
+                  leftIcon={<IconShoppingCart size={20} stroke={1.5} />}
+                  color="dark"
+                  className={'flex-1'}
+                  radius="xl"
+                  size="md"
+                  styles={{ root: { paddingRight: 14, height: 48 } }}
+                  onClick={() => {
+                    if (session == null) {
+                      alert('로그인 필요');
+                      router.push('/auth/login');
+                      return;
+                    }
+                    validate('cart');
+                  }}
+                >
+                  장바구니
+                </Button>
+                <Button
+                  disabled={wishlist == null}
+                  leftIcon={
+                    isWished ? (
+                      <IconHeartbeat size={20} stroke={1.5} />
+                    ) : (
+                      <IconHeart size={20} stroke={1.5} />
+                    )
+                  }
+                  className={`${
+                    isWished
+                      ? 'bg-red-500 hover:bg-red-600'
+                      : 'bg-gray-500 hover:bg-gray-600'
+                  }`}
+                  radius="xl"
+                  size="md"
+                  styles={{ root: { paddingRight: 14, height: 48 } }}
+                  onClick={() => {
+                    if (session == null) {
+                      alert('로그인 필요');
+                      router.push('/auth/login');
+                      return;
+                    }
+                    mutate(String(productId));
+                  }}
+                >
+                  찜하기
+                </Button>
+              </div>
+              <Button
+                variant="outline"
+                color="dark"
+                radius="xl"
+                size="md"
+                styles={{ root: { paddingRight: 14, height: 48 } }}
+                onClick={() => {
+                  if (session == null) {
+                    alert('로그인 필요');
+                    router.push('/auth/login');
+                    return;
+                  }
+                  validate('order');
+                }}
+              >
+                구매하기
+              </Button>
+              <div className="text-sm text-zinc-300">
+                등록: {format(new Date(product.createdAt), 'yyyy년 M월 d일')}
               </div>
             </div>
           </div>
-          <div className="flex flex-col space-y-6 basis-[360px] ml-24">
-            <div className="text-lg text-zinc-400">
-              {CATEGORY_MAP[product.category_id - 1]}
-            </div>
-            <div className="text-4xl font-semibold">{product.name}</div>
-            <div className="text-lg">
-              {product.price.toLocaleString('ko-kr')} 원
-            </div>
-            <div className="flex flex-col space-y-0.5">
-              <span className="text-sm text-zinc-500">수량</span>
-              <CountControl
-                value={value}
-                setValue={setValue}
-                min={1}
-                max={99}
-              />
-            </div>
-            <div className="flex space-x-4">
-              <Button
-                leftIcon={<IconShoppingCart size={20} stroke={1.5} />}
-                color="dark"
-                className={'flex-1'}
-                radius="xl"
-                size="md"
-                styles={{ root: { paddingRight: 14, height: 48 } }}
-                onClick={() => {
-                  if (session == null) {
-                    alert('로그인 필요');
-                    router.push('/auth/login');
-                    return;
-                  }
-                  validate('cart');
-                }}
-              >
-                장바구니
-              </Button>
-              <Button
-                disabled={wishlist == null}
-                leftIcon={
-                  isWished ? (
-                    <IconHeartbeat size={20} stroke={1.5} />
-                  ) : (
-                    <IconHeart size={20} stroke={1.5} />
-                  )
-                }
-                className={`${
-                  isWished
-                    ? 'bg-red-500 hover:bg-red-600'
-                    : 'bg-gray-500 hover:bg-gray-600'
-                }`}
-                radius="xl"
-                size="md"
-                styles={{ root: { paddingRight: 14, height: 48 } }}
-                onClick={() => {
-                  if (session == null) {
-                    alert('로그인 필요');
-                    router.push('/auth/login');
-                    return;
-                  }
-                  mutate(String(productId));
-                }}
-              >
-                찜하기
-              </Button>
-            </div>
-            <Button
-              variant="outline"
-              color="dark"
-              radius="xl"
-              size="md"
-              styles={{ root: { paddingRight: 14, height: 48 } }}
-              onClick={() => {
-                if (session == null) {
-                  alert('로그인 필요');
-                  router.push('/auth/login');
-                  return;
-                }
-                validate('order');
-              }}
-            >
-              구매하기
-            </Button>
-            <div className="text-sm text-zinc-300">
-              등록: {format(new Date(product.createdAt), 'yyyy년 M월 d일')}
+          <div>
+            <p className="text-2xl font-semibold my-2">후기</p>
+            <div className="flex flex-col space-y-4">
+              {props.comments?.map((comment, idx) => (
+                <CommentItem key={idx} item={comment} />
+              ))}
             </div>
           </div>
         </div>

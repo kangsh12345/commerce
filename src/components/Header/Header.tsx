@@ -1,4 +1,3 @@
-import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { useSession } from 'next-auth/react';
 import styled from '@emotion/styled';
@@ -8,6 +7,8 @@ import {
   IconShoppingCart,
   IconUser,
 } from '@tabler/icons-react';
+
+import { UserMenu } from '../Menu';
 
 export function Header() {
   const { data: session } = useSession();
@@ -24,13 +25,7 @@ export function Header() {
           onClick={() => router.push('/cart')}
         />
         {session ? (
-          <Image
-            src={session.user?.image!}
-            alt="profile"
-            width={30}
-            height={30}
-            style={{ borderRadius: '50%' }}
-          />
+          <UserMenu />
         ) : (
           <IconUser onClick={() => router.push('/auth/login')} />
         )}
