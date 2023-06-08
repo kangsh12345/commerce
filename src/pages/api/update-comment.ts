@@ -34,7 +34,7 @@ async function updateComment({
       },
     });
 
-    console.log(response);
+    console.log(`update-comment Response: ${JSON.stringify(response)}`);
 
     return response;
   } catch (error) {
@@ -56,6 +56,10 @@ export default async function handler(
 
   if (session == null) {
     res.status(200).json({ items: [], message: 'no Session' });
+    return;
+  }
+  if (contents == null && contents.length > 100) {
+    res.status(200).json({ items: [], message: 'content size error' });
     return;
   }
 
