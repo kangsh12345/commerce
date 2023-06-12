@@ -4,6 +4,7 @@ import { convertFromRaw, EditorState } from 'draft-js';
 
 import { CommentItemType } from '~/pages/products/[id]';
 
+import { AutoSizeImage } from '../AutoSizeImage/AutoSizeImage';
 import { CustomEditor } from '../Editor/Editor';
 
 export function CommentItem({ item }: { item: CommentItemType }) {
@@ -30,6 +31,11 @@ export function CommentItem({ item }: { item: CommentItemType }) {
         readOnly
         noPadding
       />
+      <div className="flex flex-col items-center space-y-3">
+        {item.images?.split(',').map((image, idx) => (
+          <AutoSizeImage key={idx} src={image} size={300} />
+        ))}
+      </div>
     </div>
   );
 }
