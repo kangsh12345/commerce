@@ -18,7 +18,6 @@ export default function Home() {
     FILTERS[0].value,
   );
   const [keyword, setKeyword] = useState('');
-
   const debouncedKeyword = useDebounce<string>(keyword);
 
   const { data: categories } = useQuery<
