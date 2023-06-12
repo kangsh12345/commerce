@@ -27,13 +27,13 @@ export async function getServerSideProps({
   params,
 }: GetServerSidePropsContext) {
   const product = await fetch(
-    `${process.env.NEXTAUTH_RUL}/api/get-product?id=${params?.id}`,
+    `${process.env.NEXT_PUBLIC_URL}/api/get-product?id=${params?.id}`,
   )
     .then(res => res.json())
     .then(data => data.items);
 
   const comments = await fetch(
-    `${process.env.NEXTAUTH_RUL}/api/get-comments?id=${params?.id}`,
+    `${process.env.NEXT_PUBLIC_URL}/api/get-comments?id=${params?.id}`,
   )
     .then(res => res.json())
     .then(data => data.items);
