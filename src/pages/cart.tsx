@@ -237,7 +237,7 @@ const Item = (props: CartItem) => {
       onSuccess: () => {
         queryClient.invalidateQueries([CART_QUERY_KEY]);
       },
-      onError: (error, _, context) => {
+      onError: (__, _, context) => {
         queryClient.setQueryData([CART_QUERY_KEY], context.previous);
       },
     },
@@ -266,7 +266,7 @@ const Item = (props: CartItem) => {
       onSuccess: () => {
         queryClient.invalidateQueries([CART_QUERY_KEY]);
       },
-      onError: (error, _, context) => {
+      onError: (__, _, context) => {
         queryClient.setQueryData([CART_QUERY_KEY], context.previous);
       },
     },

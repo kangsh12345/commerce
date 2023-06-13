@@ -105,7 +105,7 @@ export default function Products(props: {
       onSuccess: () => {
         queryClient.invalidateQueries([WISHLIST_QUERY_KEY]);
       },
-      onError: (error, _, context) => {
+      onError: (__, _, context) => {
         queryClient.setQueryData([WISHLIST_QUERY_KEY], context.previous);
       },
     },

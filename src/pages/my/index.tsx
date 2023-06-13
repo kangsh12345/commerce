@@ -110,7 +110,7 @@ const DetailItem = (props: OrderDetail) => {
       onSuccess: () => {
         queryClient.invalidateQueries([ORDER_QUERY_KEY]);
       },
-      onError: (error, _, context) => {
+      onError: (__, _, context) => {
         queryClient.setQueryData([ORDER_QUERY_KEY], context.previous);
       },
     },
@@ -162,7 +162,7 @@ const DetailItem = (props: OrderDetail) => {
         alert('저장되었습니다.');
         setToggle(false);
       },
-      onError: (error, _, context) => {
+      onError: (__, _, context) => {
         queryClient.setQueryData([ORDER_QUERY_KEY], context.previous);
         setToggle(false);
       },
